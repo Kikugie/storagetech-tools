@@ -89,27 +89,28 @@ public class FakeScreen extends GenericContainerScreen {
     protected void onMouseClick(Slot clickedSlot, int slotId, int button, SlotActionType actionType) {
         if (clickedSlot != null) {
             if (actionType == SlotActionType.PICKUP || actionType == SlotActionType.QUICK_CRAFT) {
-                if (this.handler.getCursorStack().isEmpty() && clickedSlot.hasStack()) {
-                    this.handler.setCursorStack(clickedSlot.getStack());
-                    clickedSlot.setStack(ItemStack.EMPTY);
-                } else if (!this.handler.getCursorStack().isEmpty() && !clickedSlot.hasStack()) {
-                    ItemStack slotStack = clickedSlot.getStack();
-                    clickedSlot.setStack(this.handler.getCursorStack());
-                    this.handler.setCursorStack(slotStack);
-                } else if (clickedSlot.inventory instanceof PlayerInventory && clickedSlot.hasStack()) {
-                    clickedSlot.setStack(this.handler.getCursorStack());
-                    this.handler.setCursorStack(ItemStack.EMPTY);
+
+                ItemStack slotStack = clickedSlot.getStack();
+                clickedSlot.setStack(this.handler.getCursorStack());
+                this.handler.setCursorStack(slotStack);
+
+                if (clickedSlot.inventory instanceof PlayerInventory) {
                     this.client.interactionManager.clickCreativeStack(clickedSlot.getStack(), slotId - 45);
                 }
             } else if (actionType == SlotActionType.QUICK_MOVE) {
+
                 for (int i = 44; i >= 9; i--) {
-                    if (!this.handler.slots.get(i + 45).hasStack()) {
+                    if (this.handler.slots.get(i + 45).getStack().isEmpty()) {
                         this.handler.slots.get(i + 45).setStack(clickedSlot.getStack());
                         this.client.interactionManager.clickCreativeStack(this.handler.slots.get(i + 45).getStack(), i);
                         clickedSlot.setStack(ItemStack.EMPTY);
                         break;
                     }
                 }
+            } else if (actionType == SlotActionType.THROW) {
+
+                this.client.interactionManager.dropCreativeStack(clickedSlot.getStack());
+                clickedSlot.setStack(ItemStack.EMPTY);
             }
         } else if (!this.handler.getCursorStack().isEmpty() && actionType != SlotActionType.QUICK_CRAFT) {
             this.client.interactionManager.dropCreativeStack(this.handler.getCursorStack());
